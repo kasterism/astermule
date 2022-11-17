@@ -1,0 +1,14 @@
+{
+    "nodes": [
+        {
+            "name": "A",
+            "action": "GET",
+            "url": "https://github.com/"
+        },
+        {
+            "name": "B",
+            "action": "POST",
+            "url": "https://github.com/"
+        }
+    ]
+}
