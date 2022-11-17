@@ -6,7 +6,13 @@ type DAG struct {
 
 type Node struct {
 	Name         string   `json:"name"`
-	Action       string   `json:"action"`
+	Action       string   `json:"action" default:"GET"`
 	URL          string   `json:"url"`
-	Dependencies []string `json:"dependencies"`
+	Dependencies []string `json:"dependencies,omitempty"`
+}
+
+func NewDAG() *DAG {
+	return &DAG{
+		Nodes: []Node{},
+	}
 }
