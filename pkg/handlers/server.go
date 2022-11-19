@@ -12,8 +12,12 @@ const (
 )
 
 var (
-	logger = logrus.New().WithField("handler", "server")
+	logger *logrus.Logger
 )
+
+func SetLogger(log *logrus.Logger) {
+	logger = log
+}
 
 func StartServer(address string, port uint, target string) error {
 	http.HandleFunc(target, entryHandler)

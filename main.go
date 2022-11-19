@@ -50,6 +50,7 @@ func main() {
 	}()
 
 	setSignal()
+	setLogger()
 
 	graph := dag.NewDAG()
 	err := json.Unmarshal([]byte(dagStr), graph)
@@ -64,6 +65,10 @@ func main() {
 	}
 
 	fmt.Println(graph)
+}
+
+func setLogger() {
+	handlers.SetLogger(logger.WithField("handler", "server").Logger)
 }
 
 func quitJob() {
