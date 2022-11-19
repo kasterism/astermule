@@ -50,11 +50,17 @@ func main() {
 	}()
 
 	setSignal()
+	setLogger()
 
 	graph := dag.NewDAG()
 	err := json.Unmarshal([]byte(dagStr), graph)
 	if err != nil {
 		logger.Fatalln("The dag is not canonical and cannot be resolved")
+		return
+	}
+	err = graph.Preflight()
+	if err != nil {
+		logger.Errorln("Preflight errors:", err)
 		return
 	}
 
@@ -64,6 +70,13 @@ func main() {
 	}
 
 	fmt.Println(graph)
+}
+
+func setLogger() {
+	const logKey = "package"
+
+	handlers.SetLogger(logger.WithField(logKey, "handlers").Logger)
+	handlers.SetLogger(logger.WithField(logKey, "dag").Logger)
 }
 
 func quitJob() {

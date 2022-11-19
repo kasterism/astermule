@@ -19,6 +19,9 @@ build: fmt vet ## Build manager binary.
 run: fmt vet ## Run code from your host.
 	go run ./main.go
 
+test:
+	go test ./... -coverprofile cover.out
+
 # go-get-tool will 'go get' any package $2 and install it to $1.
 PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
 define go-get-tool
