@@ -58,6 +58,11 @@ func main() {
 		logger.Fatalln("The dag is not canonical and cannot be resolved")
 		return
 	}
+	err = graph.Preflight()
+	if err != nil {
+		logger.Errorln("Preflight errors:", err)
+		return
+	}
 
 	err = handlers.StartServer(address, port, target)
 	if err != nil {
@@ -68,7 +73,10 @@ func main() {
 }
 
 func setLogger() {
-	handlers.SetLogger(logger.WithField("handler", "server").Logger)
+	const logKey = "package"
+
+	handlers.SetLogger(logger.WithField(logKey, "handlers").Logger)
+	handlers.SetLogger(logger.WithField(logKey, "dag").Logger)
 }
 
 func quitJob() {

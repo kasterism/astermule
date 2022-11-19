@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -13,6 +14,8 @@ const (
 
 var (
 	logger *logrus.Logger
+
+	ErrURLExisted = errors.New("url is already used")
 )
 
 func SetLogger(log *logrus.Logger) {
@@ -25,7 +28,7 @@ func StartServer(address string, port uint, target string) error {
 	logger.Infoln("Start listening in", listenAddr)
 	err := http.ListenAndServe(listenAddr, nil)
 	if err != nil {
-		logger.Fatalln(err, "URL cannot listen")
+		logger.Fatalln("URL cannot listen:", err)
 		return ErrURLExisted
 	}
 	return nil
