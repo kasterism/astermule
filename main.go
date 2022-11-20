@@ -10,6 +10,7 @@ import (
 
 	"github.com/kasterism/astermule/pkg/dag"
 	"github.com/kasterism/astermule/pkg/handlers"
+	"github.com/kasterism/astermule/pkg/parser"
 	"github.com/sirupsen/logrus"
 )
 
@@ -76,7 +77,8 @@ func setLogger() {
 	const logKey = "package"
 
 	handlers.SetLogger(logger.WithField(logKey, "handlers").Logger)
-	handlers.SetLogger(logger.WithField(logKey, "dag").Logger)
+	dag.SetLogger(logger.WithField(logKey, "dag").Logger)
+	parser.SetLogger(logger.WithField(logKey, "parse").Logger)
 }
 
 func quitJob() {
