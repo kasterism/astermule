@@ -68,7 +68,8 @@ func (s *SimpleParser) scanChannelGroup(d *dag.DAG) ([]chan<- Message, []<-chan 
 
 func (s *SimpleParser) makeFunc(d *dag.DAG) []func() {
 	fs := make([]func(), 0)
-	for _, node := range d.Nodes {
+	for i := range d.Nodes {
+		node := d.Nodes[i]
 		chGrp := s.ChanGroup[node.Name]
 		f := func() {
 			logger.Infoln("func register:", node.Name)
@@ -79,6 +80,9 @@ func (s *SimpleParser) makeFunc(d *dag.DAG) []func() {
 			}
 
 			logger.Infoln("func launch:", node.Name)
+
+			// TODO: Implement the following code as a real http client
+			logger.Infoln("send msg to", node.URL)
 
 			// TODO: Check error
 			mergeMsg := &Message{}
