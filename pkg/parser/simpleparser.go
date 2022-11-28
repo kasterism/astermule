@@ -20,9 +20,12 @@ func NewSimpleParser() *SimpleParser {
 }
 
 func (s *SimpleParser) Parse(d *dag.DAG) ControlPlane {
+	c := ControlPlane{}
 	s.Init(d)
 	s.makeChannelGroup(d)
-
+	c.Entry, c.Exit = s.scanChannelGroup(d)
+	c.Fs = s.makeFunc(d)
+	return c
 }
 
 func (s *SimpleParser) Init(d *dag.DAG) {
@@ -42,4 +45,54 @@ func (s *SimpleParser) makeChannelGroup(d *dag.DAG) {
 			s.ChanGroup[node.Name].ReadCh = append(s.ChanGroup[node.Name].ReadCh, ch)
 		}
 	}
+}
+
+func (s *SimpleParser) scanChannelGroup(d *dag.DAG) ([]chan<- Message, []<-chan Message) {
+	entry := make([]chan<- Message, 0)
+	exit := make([]<-chan Message, 0)
+	for _, v := range s.ChanGroup {
+		if len(v.ReadCh) == 0 {
+			ch := make(chan Message)
+			entry = append(entry, ch)
+			v.ReadCh = append(v.ReadCh, ch)
+		}
+
+		if len(v.WriteCh) == 0 {
+			ch := make(chan Message)
+			exit = append(exit, ch)
+			v.WriteCh = append(v.WriteCh, ch)
+		}
+	}
+	return entry, exit
+}
+
+func (s *SimpleParser) makeFunc(d *dag.DAG) []func() {
+	fs := make([]func(), 0)
+	for _, node := range d.Nodes {
+		chGrp := s.ChanGroup[node.Name]
+		f := func() {
+			logger.Infoln("func register:", node.Name)
+			msgs := make([]Message, 0)
+			for _, readCh := range chGrp.ReadCh {
+				msg := <-readCh
+				msgs = append(msgs, msg)
+			}
+
+			logger.Infoln("func launch:", node.Name)
+
+			// TODO: Check error
+			mergeMsg := &Message{}
+			for i := range msgs {
+				msgs[i].DeepMergeInto(mergeMsg)
+			}
+
+			for _, writeCh := range chGrp.WriteCh {
+				writeCh <- *mergeMsg
+			}
+
+			logger.Infoln("func end:", node.Name)
+		}
+		fs = append(fs, f)
+	}
+	return fs
 }

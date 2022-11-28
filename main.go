@@ -24,7 +24,7 @@ func setSignal() {
 	signal.Notify(c, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-c
-		logger.Infoln("Signal interrupt")
+		logger.Println("Signal interrupt")
 		quitJob()
 		os.Exit(1)
 	}()
@@ -36,6 +36,7 @@ func main() {
 		port    uint
 		target  string
 		dagStr  string
+		p       parser.Parser
 	)
 
 	flag.StringVar(&address, "address", "0.0.0.0", "The boot address of launching astermule.")
@@ -46,7 +47,7 @@ func main() {
 	flag.Parse()
 
 	defer func() {
-		logger.Infoln("Coredump clean...")
+		logger.Println("Coredump clean...")
 		quitJob()
 	}()
 
@@ -59,13 +60,17 @@ func main() {
 		logger.Fatalln("The dag is not canonical and cannot be resolved")
 		return
 	}
+
 	err = graph.Preflight()
 	if err != nil {
-		logger.Errorln("Preflight errors:", err)
+		logger.Fatalln("Preflight errors:", err)
 		return
 	}
 
-	err = handlers.StartServer(address, port, target)
+	p = parser.NewSimpleParser()
+	controlPlane := p.Parse(graph)
+
+	err = handlers.StartServer(&controlPlane, address, port, target)
 	if err != nil {
 		return
 	}
@@ -78,9 +83,9 @@ func setLogger() {
 
 	handlers.SetLogger(logger.WithField(logKey, "handlers").Logger)
 	dag.SetLogger(logger.WithField(logKey, "dag").Logger)
-	parser.SetLogger(logger.WithField(logKey, "parse").Logger)
+	parser.SetLogger(logger.WithField(logKey, "parser").Logger)
 }
 
 func quitJob() {
-	logger.Infoln("Quit...")
+	logger.Println("Quit...")
 }
