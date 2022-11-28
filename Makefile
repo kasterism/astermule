@@ -49,3 +49,7 @@ endif
 
 lint: install-golint ## Run go lint against code.
 	$(GOLINT_BIN) run -v
+
+# for debug
+debug:
+	go run main.go --dag '{"nodes":[{"name":"A","action":"GET","url": "url A"}, {"name":"B","action":"GET","url":"url B"}]}'
