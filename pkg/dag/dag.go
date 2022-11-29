@@ -17,10 +17,10 @@ type Node struct {
 }
 
 var (
-	logger *logrus.Logger
+	logger *logrus.Entry
 )
 
-func SetLogger(log *logrus.Logger) {
+func SetLogger(log *logrus.Entry) {
 	logger = log
 }
 
