@@ -14,13 +14,13 @@ const (
 )
 
 var (
-	logger       *logrus.Logger
+	logger       *logrus.Entry
 	controlPlane *parser.ControlPlane
 
 	ErrURLExisted = errors.New("url is already used")
 )
 
-func SetLogger(log *logrus.Logger) {
+func SetLogger(log *logrus.Entry) {
 	logger = log
 }
 
