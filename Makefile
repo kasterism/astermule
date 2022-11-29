@@ -59,4 +59,4 @@ lint: install-golint ## Run go lint against code.
 
 # for debug
 debug:
-	go run main.go --dag '{"nodes":[{"name":"A","action":"GET","url": "url A"}, {"name":"B","action":"GET","url":"url B"}]}'
+	go run main.go --dag '{"nodes":[{"name":"A","action":"GET","url": "url A"}, {"name":"B","action":"GET","url":"url B","dependencies":["A"]}, {"name":"C","action":"POST","url":"url C","dependencies":["A"]},{"name":"D","action":"GET","url":"url D","dependencies":["B","C"]}]}'
