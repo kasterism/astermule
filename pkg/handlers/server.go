@@ -54,21 +54,21 @@ func launchAllThread() {
 
 func beforeServerStart() {
 	for i := range controlPlane.Entry {
-		controlPlane.Entry[i] <- *parser.NewMessage(true, nil)
+		controlPlane.Entry[i] <- *parser.NewMessage(true, "")
 	}
 }
 
 func afterServerStart() []byte {
-	res := parser.NewMessage(true, nil)
+	res := parser.NewMessage(true, "")
 	for i := range controlPlane.Exit {
 		msg := <-controlPlane.Exit[i]
 		msg.DeepMergeInto(res)
 	}
-	data, err := res.Parse()
+	data, err := res.Marshal()
 	if err != nil {
 		logger.Errorln("Result message parse error:", err)
-		errMsg := parser.NewMessage(false, nil)
-		errData, _ := errMsg.Parse()
+		errMsg := parser.NewMessage(false, "")
+		errData, _ := errMsg.Marshal()
 		return errData
 	}
 	return data

@@ -2,6 +2,7 @@ package parser
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/kasterism/astermule/pkg/dag"
 	"github.com/sirupsen/logrus"
@@ -26,8 +27,8 @@ type Parser interface {
 }
 
 type Message struct {
-	Status Status      `json:"status"`
-	Data   interface{} `json:"data"`
+	Status Status `json:"status"`
+	Data   string `json:"data"`
 }
 
 // TODO: Define Status
@@ -35,7 +36,7 @@ type Status struct {
 	Health bool
 }
 
-func NewMessage(health bool, data interface{}) *Message {
+func NewMessage(health bool, data string) *Message {
 	return &Message{
 		Status: Status{
 			Health: health,
@@ -45,9 +46,34 @@ func NewMessage(health bool, data interface{}) *Message {
 }
 
 func (in *Message) DeepMergeInto(out *Message) {
-	// TODO: Merge Json
+	if !in.Status.Health {
+		out.Status.Health = false
+		return
+	}
+
+	inData, err := in.Unmarshal()
+	if err != nil {
+		logger.Errorln("Unmarshal fail:", err)
+	}
+
+	outData, err := out.Unmarshal()
+	if err != nil {
+		logger.Errorln("Unmarshal fail:", err)
+	}
+
+	// TODO: Finish real merger
+	fmt.Println(inData, outData)
 }
 
-func (m Message) Parse() ([]byte, error) {
+func (m Message) Marshal() ([]byte, error) {
 	return json.Marshal(m)
+}
+
+func (m Message) Unmarshal() (interface{}, error) {
+	var data interface{}
+	err := json.Unmarshal([]byte(m.Data), &data)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
