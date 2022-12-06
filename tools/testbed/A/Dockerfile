@@ -9,5 +9,6 @@ RUN CGO_ENABLED=0 go build -a -o testA ./main.go
 FROM ubuntu:22.10
 WORKDIR /
 COPY --from=builder /workspace/testA .
+EXPOSE 8000
 
 ENTRYPOINT ["/testA"]
