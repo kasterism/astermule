@@ -1,64 +1,35 @@
 package main
 
 import (
-	"fmt"
-	"io"
+	"encoding/json"
+	"log"
 	"net/http"
 )
 
 func main() {
-	// http://127.0.0.1:8001/B
-	http.HandleFunc("/B", myHandler)
-	http.ListenAndServe("127.0.0.1:8001", nil)
+	http.HandleFunc("/test", getJsonTest)
+	err := http.ListenAndServe(":8001", nil)
+	if err != nil {
+		log.Println("http server listen :", err)
+	}
 }
 
-// handler函数
-func myHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(r.RemoteAddr, "connect success!")
-	fmt.Println("method:", r.Method)
-	fmt.Println("url:", r.URL.Path)
-	fmt.Println("header:", r.Header)
-	fmt.Println("body:", r.Body)
-	fmt.Println("user name: ", r.URL.Query().Get("username"))
-
-	// GET A
-	resp, err := http.Get("http://127.0.0.1:8000/A")
-
+func getJsonTest(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Fatal("parse form error ", err)
 	}
+	// 初始化请求变量结构
+	formData := make(map[string]interface{})
 
-	defer resp.Body.Close()
-
-	fmt.Println("resp status:", resp.Status)
-	fmt.Println("resp header:", resp.Header)
-	fmt.Println("resp body:", resp.Body)
-
-	buf := make([]byte, 1024)
-	for {
-		// 接收服务端信息
-		n, err := resp.Body.Read(buf)
-		if err != nil && err != io.EOF {
-			fmt.Println(err)
-			return
-		} else {
-			fmt.Println("读取完毕")
-			res := string(buf[:n])
-			fmt.Println(res)
-			w.Write([]byte(res))
-			break
-		}
+	// 调用json包的解析，解析请求body
+	json.NewDecoder(r.Body).Decode(&formData)
+	for key, value := range formData {
+		log.Println("key:", key, " => value :", value)
 	}
+	formData["age"] = "22"
 
-	if r.Method == "POST" {
-		var (
-			username string = r.PostFormValue("username")
-			// password string = r.PostFormValue("password")
-		)
-		w.Write([]byte("username: " + username))
-	}
-	// w.Write([]byte(res))
-	// w.Write([]byte(r.URL.Query().Get("username")))
-	w.Write([]byte("\nB write back!\n"))
+	// 返回json字符串给客户端
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(formData)
 }
