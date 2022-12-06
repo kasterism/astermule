@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"github.com/kasterism/astermule/pkg/clients/httpclient"
 	"github.com/kasterism/astermule/pkg/dag"
 )
 
@@ -81,17 +82,29 @@ func (s *SimpleParser) makeFunc(d *dag.DAG) []func() {
 
 			logger.Infoln("func launch:", node.Name)
 
-			// TODO: Implement the following code as a real http client
-			logger.Infoln("send msg to", node.URL)
-
 			// TODO: Check error
 			mergeMsg := &Message{}
 			for i := range msgs {
 				msgs[i].DeepMergeInto(mergeMsg)
 			}
 
+			// Prepare sendMsg
+			sendMsg := &Message{}
+			sendMsg.Status.Health = true
+
+			// Call http client
+			logger.Infoln("send msg to", node.URL)
+			res, err := httpclient.Send(node.Action, node.URL, mergeMsg.Data)
+			if err != nil {
+				logger.Errorln("httpclient error:", err)
+				sendMsg.Status.Health = false
+			} else {
+				logger.Infoln("receive respense:", res)
+				sendMsg.Data = res
+			}
+
 			for _, writeCh := range chGrp.WriteCh {
-				writeCh <- *mergeMsg
+				writeCh <- *sendMsg
 			}
 
 			logger.Infoln("func end:", node.Name)
