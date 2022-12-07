@@ -1,3 +1,7 @@
+TEST_DIR := test
+TOOLS_DIR := tools
+
+
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
 GOBIN=$(shell go env GOPATH)/bin
@@ -60,3 +64,9 @@ lint: install-golint ## Run go lint against code.
 # for debug
 debug:
 	go run main.go --dag '{"nodes":[{"name":"A","action":"GET","url": "url A"}, {"name":"B","action":"GET","url":"url B","dependencies":["A"]}, {"name":"C","action":"POST","url":"url C","dependencies":["A"]},{"name":"D","action":"GET","url":"url D","dependencies":["B","C"]}]}'
+
+testbed-build:
+	$(MAKE) -C $(TOOLS_DIR)/testbed docker-build
+
+testbed-push:
+	$(MAKE) -C $(TOOLS_DIR)/testbed docker-push
