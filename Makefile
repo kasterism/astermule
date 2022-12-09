@@ -63,7 +63,21 @@ lint: install-golint ## Run go lint against code.
 
 # for debug
 debug:
-	go run main.go --dag '{"nodes":[{"name":"A","action":"GET","url": "url A"}, {"name":"B","action":"GET","url":"url B","dependencies":["A"]}, {"name":"C","action":"POST","url":"url C","dependencies":["A"]},{"name":"D","action":"GET","url":"url D","dependencies":["B","C"]}]}'
+	docker pull kasterism/test_a
+	docker pull kasterism/test_b
+	docker pull kasterism/test_c
+	docker pull kasterism/test_d
+	docker run --name test_a -p 8000:8000 -itd kasterism/test_a
+	docker run --name test_b -p 8001:8001 -itd kasterism/test_b
+	docker run --name test_c -p 8002:8002 -itd kasterism/test_c
+	docker run --name test_d -p 8003:8003 -itd kasterism/test_d
+	go run main.go --dag '{"nodes":[{"name":"A","action":"GET","url":"http://localhost:8000/test"},{"name":"B","action":"POST","url":"http://localhost:8001/test","dependencies":["A"]},{"name":"C","action":"POST","url":"http://localhost:8002/test","dependencies":["A"]},{"name":"D","action":"POST","url":"http://localhost:8003/test","dependencies":["B","C"]}]}'
+
+clean:
+	docker rm -f test_a
+	docker rm -f test_b
+	docker rm -f test_c
+	docker rm -f test_d
 
 testbed-build:
 	$(MAKE) -C $(TOOLS_DIR)/testbed docker-build

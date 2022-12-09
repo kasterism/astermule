@@ -73,41 +73,43 @@ func (s *SimpleParser) makeFunc(d *dag.DAG) []func() {
 		node := d.Nodes[i]
 		chGrp := s.ChanGroup[node.Name]
 		f := func() {
-			logger.Infoln("func register:", node.Name)
-			msgs := make([]Message, 0)
-			for _, readCh := range chGrp.ReadCh {
-				msg := <-readCh
-				msgs = append(msgs, msg)
+			for {
+				logger.Infoln("func register:", node.Name)
+				msgs := make([]Message, 0)
+				for _, readCh := range chGrp.ReadCh {
+					msg := <-readCh
+					msgs = append(msgs, msg)
+				}
+
+				logger.Infoln("func launch:", node.Name)
+
+				// TODO: Check error
+				mergeMsg := &Message{}
+				for i := range msgs {
+					msgs[i].DeepMergeInto(mergeMsg)
+				}
+
+				// Prepare sendMsg
+				sendMsg := &Message{}
+				sendMsg.Status.Health = true
+
+				// Call http client
+				logger.Infoln("send msg to", node.URL)
+				res, err := httpclient.Send(node.Action, node.URL, mergeMsg.Data)
+				if err != nil {
+					logger.Errorln("httpclient error:", err)
+					sendMsg.Status.Health = false
+				} else {
+					logger.Infoln("receive respense:", res)
+					sendMsg.Data = res
+				}
+
+				for _, writeCh := range chGrp.WriteCh {
+					writeCh <- *sendMsg
+				}
+
+				logger.Infoln("func end:", node.Name)
 			}
-
-			logger.Infoln("func launch:", node.Name)
-
-			// TODO: Check error
-			mergeMsg := &Message{}
-			for i := range msgs {
-				msgs[i].DeepMergeInto(mergeMsg)
-			}
-
-			// Prepare sendMsg
-			sendMsg := &Message{}
-			sendMsg.Status.Health = true
-
-			// Call http client
-			logger.Infoln("send msg to", node.URL)
-			res, err := httpclient.Send(node.Action, node.URL, mergeMsg.Data)
-			if err != nil {
-				logger.Errorln("httpclient error:", err)
-				sendMsg.Status.Health = false
-			} else {
-				logger.Infoln("receive respense:", res)
-				sendMsg.Data = res
-			}
-
-			for _, writeCh := range chGrp.WriteCh {
-				writeCh <- *sendMsg
-			}
-
-			logger.Infoln("func end:", node.Name)
 		}
 		fs = append(fs, f)
 	}

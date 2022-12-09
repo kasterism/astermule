@@ -2,7 +2,6 @@ package parser
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/kasterism/astermule/pkg/dag"
 	"github.com/sirupsen/logrus"
@@ -51,6 +50,17 @@ func (in *Message) DeepMergeInto(out *Message) {
 		return
 	}
 
+	if in.Data == "" {
+		out.Status.Health = true
+		return
+	}
+
+	if out.Data == "" {
+		out.Data = in.Data
+		out.Status.Health = true
+		return
+	}
+
 	inData, err := in.Unmarshal()
 	if err != nil {
 		logger.Errorln("Unmarshal fail:", err)
@@ -61,8 +71,33 @@ func (in *Message) DeepMergeInto(out *Message) {
 		logger.Errorln("Unmarshal fail:", err)
 	}
 
-	// TODO: Finish real merger
-	fmt.Println(inData, outData)
+	inDataMap, ok := inData.(map[string]interface{})
+	if !ok {
+		out.Status.Health = false
+		return
+	}
+
+	outDataMap, ok := outData.(map[string]interface{})
+	if !ok {
+		out.Status.Health = false
+		return
+	}
+
+	// Shallow merge
+	for k, v := range inDataMap {
+		if _, ok := outDataMap[k]; !ok {
+			outDataMap[k] = v
+		}
+	}
+
+	res, err := json.Marshal(outDataMap)
+	if err != nil {
+		out.Status.Health = false
+		return
+	}
+
+	out.Status.Health = true
+	out.Data = string(res)
 }
 
 func (m Message) Marshal() ([]byte, error) {
