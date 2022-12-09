@@ -81,7 +81,7 @@ func main() {
 func setLogger() {
 	const logKey = "package"
 
-	handlers.SetLogger(logger.WithField(logKey, "handlers"))
+	handlers.SetLogger(logger.WithField(logKey, "handler"))
 	dag.SetLogger(logger.WithField(logKey, "dag"))
 	parser.SetLogger(logger.WithField(logKey, "parser"))
 }
