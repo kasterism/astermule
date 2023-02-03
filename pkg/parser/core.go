@@ -32,7 +32,7 @@ type Message struct {
 
 // TODO: Define Status
 type Status struct {
-	Health bool
+	Health bool `json:"health"`
 }
 
 func NewMessage(health bool, data string) *Message {
