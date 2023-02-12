@@ -26,7 +26,11 @@ run: fmt vet ## Run code from your host.
 test:
 	go test ./... -coverprofile cover.out
 
-IMG ?= kasterism/astermule
+STAGING_REGISTRY ?= kasterism
+IMAGE_NAME ?= astermule
+TAG ?= latest
+
+IMG ?= ${STAGING_REGISTRY}/${IMAGE_NAME}:${TAG}
 docker-build:
 	docker buildx build -t ${IMG} . --load
 
