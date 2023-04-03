@@ -12,10 +12,10 @@ RUN go mod download
 
 # Copy go source
 COPY pkg/ pkg/
-COPY main.go main.go
+COPY cmd/ cmd/
 
 # Build
-RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -o astermule ./main.go
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -o astermule ./cmd/main.go
 
 # Store binary
 FROM --platform=$TARGETPLATFORM ubuntu:22.10
