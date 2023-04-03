@@ -17,6 +17,7 @@ type Node struct {
 }
 
 var (
+	// nolint:unused
 	logger *logrus.Entry
 )
 

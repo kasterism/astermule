@@ -20,10 +20,6 @@ var shutdownSignals = []os.Signal{os.Interrupt, syscall.SIGTERM}
 var onlyOneSignalHandler = make(chan struct{})
 var shutdownHandler chan os.Signal
 
-var (
-	logger = logrus.New()
-)
-
 func NewRootCommand() *cobra.Command {
 	opts := options.NewOptions()
 	// rootCmd represents the base command when called without any subcommands
@@ -42,11 +38,10 @@ func NewRootCommand() *cobra.Command {
 }
 
 func runCommand(cmd *cobra.Command, opts *options.Options) error {
-	setLogger()
-	return Run(setSignal(), opts)
+	return Run(setSignal(), setLogger(), opts)
 }
 
-func Run(ctx context.Context, opts *options.Options) error {
+func Run(ctx context.Context, logger *logrus.Logger, opts *options.Options) error {
 	graph := dag.NewDAG()
 	err := json.Unmarshal([]byte(opts.DagStr), graph)
 	if err != nil {
@@ -72,12 +67,16 @@ func Run(ctx context.Context, opts *options.Options) error {
 	return nil
 }
 
-func setLogger() {
+func setLogger() *logrus.Logger {
 	const logKey = "package"
+
+	logger := logrus.New()
 
 	handlers.SetLogger(logger.WithField(logKey, "handler"))
 	dag.SetLogger(logger.WithField(logKey, "dag"))
 	parser.SetLogger(logger.WithField(logKey, "parser"))
+
+	return logger
 }
 
 func setSignal() context.Context {
