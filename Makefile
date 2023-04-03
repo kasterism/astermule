@@ -18,10 +18,10 @@ vet: ## Run go vet against code.
 	go vet ./...
 
 build: fmt vet ## Build manager binary.
-	go build -o bin/astermule main.go
+	go build -o bin/astermule cmd/main.go
 
 run: fmt vet ## Run code from your host.
-	go run ./main.go
+	go run cmd/main.go
 
 test:
 	go test ./... -coverprofile cover.out
@@ -75,7 +75,7 @@ debug:
 	docker run --name test_b -p 8001:8001 -itd kasterism/test_b
 	docker run --name test_c -p 8002:8002 -itd kasterism/test_c
 	docker run --name test_d -p 8003:8003 -itd kasterism/test_d
-	go run main.go --dag '{"nodes":[{"name":"A","action":"GET","url":"http://localhost:8000/test"},{"name":"B","action":"POST","url":"http://localhost:8001/test","dependencies":["A"]},{"name":"C","action":"POST","url":"http://localhost:8002/test","dependencies":["A"]},{"name":"D","action":"POST","url":"http://localhost:8003/test","dependencies":["B","C"]}]}'
+	go run cmd/main.go --dag '{"nodes":[{"name":"A","action":"GET","url":"http://localhost:8000/test"},{"name":"B","action":"POST","url":"http://localhost:8001/test","dependencies":["A"]},{"name":"C","action":"POST","url":"http://localhost:8002/test","dependencies":["A"]},{"name":"D","action":"POST","url":"http://localhost:8003/test","dependencies":["B","C"]}]}'
 
 clean:
 	docker rm -f test_a
